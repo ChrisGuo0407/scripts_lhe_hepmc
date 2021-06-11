@@ -4,7 +4,7 @@ import pyhepmc_ng as hep
 import matplotlib.pyplot as plt
 import numpy
 
-infile = "events.hepmc"
+infile = "/eos/user/k/kdipetri/Snowmass_HepMC/run_staus/stau_400_0_1ns/events.hepmc"
 
 # If this is true, stop after 10 events
 doTest = True
