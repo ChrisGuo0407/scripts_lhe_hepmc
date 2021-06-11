@@ -21,7 +21,7 @@ plt.title('X and Y decay position of Slepton')
 plt.xlabel('Lxy')
 plt.ylabel('# of Sleptons')
 plt.tight_layout()
-plt.savefig('LxyPlot.svg')
+plt.savefig('LxyPlot.png')
 plt.clf()
 
   # Create a histogram for pT.
@@ -34,7 +34,7 @@ plt.title('X and Y decay position of Slepton')
 plt.xlabel('pT (GeV)')
 plt.ylabel('# of Sleptons')
 plt.tight_layout()
-plt.savefig('pTPlot.svg')
+plt.savefig('pTPlot.png')
 plt.clf()
 
   # Create a histogram for phi.
@@ -47,7 +47,7 @@ plt.title('X and Y decay position of Slepton')
 plt.xlabel('phi')
 plt.ylabel('# of Sleptons')
 plt.tight_layout()
-plt.savefig('phiPlot.svg')
+plt.savefig('phiPlot.png')
 plt.clf()
 
   # Create a histogram for eta.
@@ -60,5 +60,5 @@ plt.title('X and Y decay position of Slepton')
 plt.xlabel('eta')
 plt.ylabel('# of Sleptons')
 plt.tight_layout()
-plt.savefig('etaPlot.svg')
+plt.savefig('etaPlot.png')
 plt.clf()
