@@ -3,6 +3,11 @@ import json
 import pyhepmc_ng as hep
 import matplotlib.pyplot as plt
 import numpy
+import argparse
+
+parser = argparse.ArgumentParser(description='Runs configuration for Slepton files')
+parser.add_argument('mass', type=str, nargs='+',
+                    help='an integer for the accumulator')
 
 infile = "/eos/user/k/kdipetri/Snowmass_HepMC/run_staus/stau_400_0_1ns/events.hepmc"
 
