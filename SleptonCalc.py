@@ -6,13 +6,19 @@ import numpy
 import argparse
 
 parser = argparse.ArgumentParser(description='Runs configuration for Slepton files')
-parser.add_argument('mass', type=str, nargs='+',
-                    help='an integer for the accumulator')
+parser.add_argument('--mass', type=str, default = '400', help = 'Default mass for Slepton ')
+parser.add_argument('--lifetime', type=str, default = '1ns', help = 'Default lifetime for Slepton')
+parser.add_argument('dotest', type=bool, default = False, help = 'Set to false so no test is run, change to True to run test')
 
-infile = "/eos/user/k/kdipetri/Snowmass_HepMC/run_staus/stau_400_0_1ns/events.hepmc"
+args = parser.parse_args()
+	
+infile = "/eos/user/k/kdipetri/Snowmass_HepMC/run_staus/stau_{}_0_{}/events.hepmc".format(args.mass,args.lifetime)
+
+#Checks to see if the file works
+print('Works')
 
 # If this is true, stop after 10 events
-doTest = True
+doTest = args.dotest
 
 #initializes array
 Lxyarray = []
@@ -94,8 +100,11 @@ with hep.open(infile) as f:
 #print("test array", pTarray)
 
 
-data = {"Lxy": Lxyarray, "pT": pTarray, "phi": phiarray, "eta": etaarray}
+data = {"Lxy{}_{}".format(args.mass, args.lifetime): Lxyarray,
+ "pT{}_{}".format(args.mass, args.lifetime): pTarray,
+ "phi{}_{}".format(args.mass, args.lifetime): phiarray,
+ "eta{}_{}".format(args.mass, args.lifetime): etaarray}
 
 
-with open('SleptonCalc.json', 'w') as fp:
+with open('SleptonCalc{}_{}.json'.format(args.mass, args.lifetime), 'w') as fp:
   json.dump(data, fp)
