@@ -4,6 +4,8 @@ import pyhepmc_ng as hep
 import matplotlib.pyplot as plt
 import numpy
 import argparse
+from func.get_iso import *  #grabs functions from get_iso.py
+
 
 parser = argparse.ArgumentParser(description='Runs configuration for Slepton files')
 parser.add_argument('--mass', type=str, default = '400', help = 'Default mass for Slepton ')
@@ -25,7 +27,7 @@ Lxyarray = []
 pTarray = []
 phiarray = []
 etaarray = []
-
+Staus = [2000015, 1000015]
 # Reads the file
 with hep.open(infile) as f:
   # Just keeps looping
@@ -51,7 +53,7 @@ with hep.open(infile) as f:
     for particle in evt.particles :
     # This is what's in the "particle" class: http://hepmc.web.cern.ch/hepmc/classHepMC3_1_1GenParticle.html
       #if(abs(particle.pid)>=10000) : print(particle.id," ",particle.pid)
-      if (abs(particle.pid)==2000015 and particle.status==62) :
+      if (abs(particle.pid) in Staus and particle.status==62) :
         #print("This is a Slepton particle")
         #print(particle.status)
 
@@ -90,7 +92,7 @@ with hep.open(infile) as f:
           pTarray.append(thispT)
           phiarray.append(thisphi)
           etaarray.append(thiseta)
-
+	  stau_isolation.append()
 
         # Otherwise, this particle isn't decaying
         else :
