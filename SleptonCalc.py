@@ -4,6 +4,7 @@ import pyhepmc_ng as hep
 import matplotlib.pyplot as plt
 import numpy
 import argparse
+import math
 from func.get_iso import *  #grabs functions from get_iso.py
 
 
@@ -28,6 +29,41 @@ pTarray = []
 phiarray = []
 etaarray = []
 Staus = [2000015, 1000015]
+
+Lxy_pass_check = [600, 800, 1000, 1200]
+pT_pass_check = [10, 20, 50, 100]
+eta_pass_check = [1.0, 2.5]
+event_counts = 0 
+Stau_counts = 0
+event_pass_lxy_cuts = []
+
+#-------------------------------------------------------------------------------------------------------------------------
+
+
+
+def passTrackTrigger(Lxy, Lxy_cuts, pT, pT_cuts)
+	passCounts = [0, 0, 0]
+	if Lxy > Lxy_cuts:
+		passCounts[0] = 1
+	if pT > pT_cuts:
+		passCounts[1] = 1
+#	if abs(eta) < eta_cuts:
+#		passCounts[2] = 1
+	if (Lxy>Lxy_cuts and pT>pT_cuts):
+		passCounts[2] = 1
+	return passCounts
+
+
+for i in range(len(Lxy_pass_check)):
+	for j in range(len(pT_pass_check)):
+		tracker = passTrackTrigger(Lxy, Lxy_pass_check[i], pT, pT_pass_check[j])
+		if tracker [0] == 1:
+			
+		if tracker [1] == 1:
+
+		if tracker [2] == 1:
+
+
 # Reads the file
 with hep.open(infile) as f:
   # Just keeps looping
