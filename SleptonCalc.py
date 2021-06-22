@@ -15,7 +15,7 @@ parser.add_argument('dotest', type=bool, default = False, help = 'Set to false s
 
 args = parser.parse_args()
 	
-infile = "/eos/user/k/kdipetri/Snowmass_HepMC/run_staus/stau_{}_0_{}/events.hepmc".format(args.mass,args.lifetime)
+read_infile = "/eos/user/k/kdipetri/Snowmass_HepMC/run_staus/stau_{}_0_{}/events.hepmc".format(args.mass,args.lifetime)
 
 #Checks to see if the file works
 print('Works')
@@ -30,6 +30,9 @@ phiarray = []
 etaarray = []
 Staus = [2000015, 1000015]
 
+seen_event_count_total = 0
+events = 0
+
 Lxy_pass_check = [600, 800, 1000, 1200]
 pT_pass_check = [10, 20, 50, 100]
 eta_pass_check = [1.0, 2.5]
@@ -40,48 +43,102 @@ event_pass_lxy_cuts = []
 #-------------------------------------------------------------------------------------------------------------------------
 
 
-
-def passTrackTrigger(Lxy, Lxy_cuts, pT, pT_cuts)
+def passTrackTrigger(Lxy, Lxy_cuts, pT, pT_cuts):
 	passCounts = [0, 0, 0]
 	if Lxy > Lxy_cuts:
-		passCounts[0] = 1
-	if pT > pT_cuts:
-		passCounts[1] = 1
+		passcount [0] = 1
+	if pt > pt_cuts:
+		passcounts[1] = 1
 #	if abs(eta) < eta_cuts:
-#		passCounts[2] = 1
-	if (Lxy>Lxy_cuts and pT>pT_cuts):
-		passCounts[2] = 1
-	return passCounts
+#		passcounts[2] = 1
+	if (lxy>lxy_cuts and pt>pt_cuts):
+		passcounts[2] = 1
+	return passcounts
 
 
-for i in range(len(Lxy_pass_check)):
-	for j in range(len(pT_pass_check)):
-		tracker = passTrackTrigger(Lxy, Lxy_pass_check[i], pT, pT_pass_check[j])
-		if tracker [0] == 1:
-			
-		if tracker [1] == 1:
+#-------------------------------------------------------------------------------------------------------------------------
+#read file start
+for m in range(len(read_infile)):
+  infile = read_infile[m]
+  n += 1
+  seen_event_count = 0
+  event_count = 0
+  dotest = false
 
-		if tracker [2] == 1:
+lxy_ok_list = numpy.zeros(len(lxy_pass_checks))
+pt_ok_list = numpy.zeros(len(pt_pass_checks))
+
+event_passes = numpy.zeros([len(lxy_pass_checks), len(pt_pass_checks)])
 
 
-# Reads the file
+
+#------------------------------------------------------------------------------------------------------------
+#event start
+
+# reads the file
 with hep.open(infile) as f:
-  # Just keeps looping
-  while True :
+  # just keeps looping
+  while true :
 
-    # Try to get an event
+    # try to get an event
     evt = f.read()
-    # If it doesn't work, we're at the end of the file. 
-    # Just stop.
+    # if it doesn't work, we're at the end of the file. 
+    # just stop.
     if not evt : break
 
-    # Stop if this is just a test
-    if doTest and evt.event_number > 500 :
+    # stop if this is just a test
+    if dotest and evt.event_number > 500 :
       break
+
+    if evt.event_number % 1000 == 0:
+    #now = datetime.now()
+    #current_time = now.strftime("%H:%M:%S")
+    	print("On file:", m+1, " Event:", evt.event_number)
+
+    event_Lxy_ok_list = numpy.zeros(len(Lxy_pass_checks))
+    event_pT_ok_list = numpy.zeros(len(pT_pass_checks))
+    event_num_good_tracks = numpy.zeros([len(Lxy_pass_checks), len(pT_pass_checks)])
+    track_ids = []
+    for i in range(len(Lxy_pass_checks)):
+    	track_ids.append([])
+	for j in range(len(d0_pass_checks)):
+		track_ids[i].append([])
+    event_count += 1
+
  
-    # From here on, do things with the event!
-    print("In event",evt.event_number)
- 
+#-----------------------------------------------------------------------------------------------------------------------
+#Particle Level Start
+#checks if track passes the pt / d0
+for i in range(len(Lxy_pass_checks)):
+	for j in range(len(pT_pass_checks)):
+		tracker = passTrackTrigger(Lxy, Lxy_pass_check[i], pT, pT_pass_check[j])
+		if tracker[0] == 1:
+			event_pt_ok_list[i] += 1
+		if tracker[1] == 1:
+			event_d0_ok_list[j] += 1
+		if tracker[2] == 1:
+			event_num_good_tracks[i][j] += 1
+#keep track ids so we can do other things later
+			track_ids[i][j].append(part.id)
+
+
+
+
+#----------------------------------------------------------------------------------------------------------------------
+
+if tracks > 0:
+	seen_event_count += 1
+for i in range(len(event_Lxy_ok_list)):
+	if event_Lxy_ok_list[i] >= track_low_cut:
+		Lxy_ok_list[i] += 1
+for i in range (len(event_pT_ok_list)):
+	if event_pT_ok_list[i] >= track_low_cut:
+		pT_ok_list[i] += 1
+for i in range(len(event_num_good_tracks)):
+	for j in range(len(event_num_good_tracks[i])):
+		if event_num_good_tracks[i][j] >= track_low_cut:
+			event_passes[i][j] += 1
+
     # Get particles with evt.particles
     # Get vertices with evt.vertices
     # Various classes link the two together
@@ -137,6 +194,15 @@ with hep.open(infile) as f:
 #Tests to see if values are properly placed into array
 #print("test array", pTarray)
 
+events += event_count    
+seen_event_count_total += seen_event_count
+
+efficiencies = numpy.empty([len(event_passes), len(event_passes[0])])
+errors = numpy.empty([len(event_passes), len(event_passes[0])])
+	for i in range(len(event_passes)):
+	for j in range(len(event_passes[i])):
+		efficiencies[i][j] = (event_passes[i][j] / seen_event_count)
+		errors[i][j] = (math.sqrt((event_passes[i][j] / seen_event_count) * (1 - (event_passes[i][j] / seen_event_count)) / seen_event_count))
 
 data = {"Lxy{}_{}".format(args.mass, args.lifetime): Lxyarray,
  "pT{}_{}".format(args.mass, args.lifetime): pTarray,
@@ -146,3 +212,6 @@ data = {"Lxy{}_{}".format(args.mass, args.lifetime): Lxyarray,
 
 with open('SleptonCalc{}_{}.json'.format(args.mass, args.lifetime), 'w') as fp:
   json.dump(data, fp)
+
+print("Percent of \"seen\" events: ", 100 * seen_event_count_total / events, "%")
+print("Percent of \"Lxy\" events: ", 100 * Lxy_ok_list / events, "%")
