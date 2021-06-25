@@ -38,64 +38,75 @@ phi2 = data2["phi{}_{}".format(args.mass2, args.lifetime2)]
 eta1 = data1["eta{}_{}".format(args.mass1, args.lifetime1)]
 eta2 = data2["eta{}_{}".format(args.mass2, args.lifetime2)]
 
+LxyEff1 = data1["LxyEff{}_{}".format(args.mass1, args.lifetime1)]
+LxyEff2 = data2["LxyEff{}_{}".format(args.mass2, args.lifetime2)]
 
 #Checks to see if code works
 print('Code is working')
 	
 doTest = args.dotest
 
-plt.style.use('fivethirtyeight')
-bin = numpy.linspace(0,2000,30)
-plt.yscale("log")
-plt.hist(Lxy1, bins=bin, alpha=0.5, label='{} GeV'.format(args.mass1))
-plt.hist(Lxy2, bins=bin, alpha=0.5, label='{} GeV'.format(args.mass2))
-plt.legend(loc = 'upper right')
-plt.xlabel('Lxy(mm)')
-plt.ylabel('# of Sleptons')
+plt.title("Line Graph")
+plt.xlabel("Cut")
+plt.ylabel("Efficiency %")
+plt.plot(LxyEff1,  alpha=0.5, label='{} GeV'.format(args.mass1))
+plt.plot(LxyEff2,  alpha=0.5, label='{} GeV'.format(args.mass2))
 plt.tight_layout()
-plt.savefig('LxyPlotComp{}_{}vs{}_{}.png'.format(args.mass1, args.lifetime1, args.mass2, args.lifetime2))
+plt.savefig("LxyEffComp.png")
 plt.clf()
 
+#plt.style.use('fivethirtyeight')
+#bin = numpy.linspace(0,2000,30)
+#plt.yscale("log")
+#plt.hist(Lxy1, bins=bin, alpha=0.5, label='{} GeV'.format(args.mass1))
+#plt.hist(Lxy2, bins=bin, alpha=0.5, label='{} GeV'.format(args.mass2))
+#plt.legend(loc = 'upper right')
+#plt.xlabel('Lxy(mm)')
+#plt.ylabel('# of Sleptons')
+#plt.tight_layout()
+#plt.savefig('LxyPlotComp{}_{}vs{}_{}.png'.format(args.mass1, args.lifetime1, args.mass2, args.lifetime2))
+#plt.clf()
 
-  # Create a histogram for pT.
-plt.style.use('fivethirtyeight')
-bin = numpy.linspace(0,800,30)
-  # Creates the histogram that will display the x and y position
-#plt.hist([pT1, pT2], bins = bin, 
-	#label=['{}_{}'.format(args.mass1, args.lifetime1),'{}_{}'.format(args.mass2, args.lifetime2)])
-plt.hist(pT1, bins=bin, alpha=0.5, label='{} GeV'.format(args.mass1))
-plt.hist(pT2, bins=bin, alpha=0.5, label='{} Gev'.format(args.mass2))
-#plt.title('X and Y decay position of Slepton')
-plt.yscale("linear")
-plt.legend(loc = 'upper right')
-plt.xlabel('pT (GeV)')
-plt.ylabel('# of Sleptons')
-plt.tight_layout()
-plt.savefig('pTPlot{}_{}vs{}_{}.png'.format(args.mass1, args.lifetime1, args.mass2, args.lifetime2))
-plt.clf()
 
-  #Histogram for phi
-plt.style.use('fivethirtyeight')
-bin = numpy.linspace(-5,5,30)
-plt.hist(phi1, bins=bin, alpha=0.5, label='{} GeV'.format(args.mass1))
-plt.hist(phi2, bins=bin, alpha=0.5, label='{} GeV'.format(args.mass2))
-plt.legend(loc = 'upper right')
-plt.xlabel('phi')
-plt.ylabel('# of Sleptons')
-plt.tight_layout()
-plt.savefig('phiPlotComp{}_{}vs{}_{}.png'.format(args.mass1, args.lifetime1, args.mass2, args.lifetime2))
-plt.clf()
-
-  #Histogram for eta
-plt.style.use('fivethirtyeight')
-bin = numpy.linspace(-4,4,30)
-plt.hist(eta1, bins=bin, alpha=0.5, label='{} GeV'.format(args.mass1))
-plt.hist(eta2, bins=bin, alpha=0.5, label='{} GeV'.format(args.mass2))
-plt.legend(loc = 'upper right')
-plt.xlabel('eta')
-plt.ylabel('# of Sleptons')
-plt.tight_layout()
-plt.savefig('eta{}_{}vs{}_{}.png'.format(args.mass1, args.lifetime1, args.mass2, args.lifetime2))
-plt.clf()
-
+#  # Create a histogram for pT.
+#plt.style.use('fivethirtyeight')
+#bin = numpy.linspace(0,800,30)
+#  # Creates the histogram that will display the x and y position
+##plt.hist([pT1, pT2], bins = bin, 
+#	#label=['{}_{}'.format(args.mass1, args.lifetime1),'{}_{}'.format(args.mass2, args.lifetime2)])
+#plt.hist(pT1, bins=bin, alpha=0.5, label='{} GeV'.format(args.mass1))
+#plt.hist(pT2, bins=bin, alpha=0.5, label='{} Gev'.format(args.mass2))
+##plt.title('X and Y decay position of Slepton')
+#plt.yscale("linear")
+#plt.legend(loc = 'upper right')
+#plt.xlabel('pT (GeV)')
+#plt.ylabel('# of Sleptons')
+#plt.tight_layout()
+#plt.savefig('pTPlot{}_{}vs{}_{}.png'.format(args.mass1, args.lifetime1, args.mass2, args.lifetime2))
+#plt.clf()
+#
+#  #Histogram for phi
+#plt.style.use('fivethirtyeight')
+#bin = numpy.linspace(-5,5,30)
+#plt.hist(phi1, bins=bin, alpha=0.5, label='{} GeV'.format(args.mass1))
+#plt.hist(phi2, bins=bin, alpha=0.5, label='{} GeV'.format(args.mass2))
+#plt.legend(loc = 'upper right')
+#plt.xlabel('phi')
+#plt.ylabel('# of Sleptons')
+#plt.tight_layout()
+#plt.savefig('phiPlotComp{}_{}vs{}_{}.png'.format(args.mass1, args.lifetime1, args.mass2, args.lifetime2))
+#plt.clf()
+#
+#  #Histogram for eta
+#plt.style.use('fivethirtyeight')
+#bin = numpy.linspace(-4,4,30)
+#plt.hist(eta1, bins=bin, alpha=0.5, label='{} GeV'.format(args.mass1))
+#plt.hist(eta2, bins=bin, alpha=0.5, label='{} GeV'.format(args.mass2))
+#plt.legend(loc = 'upper right')
+#plt.xlabel('eta')
+#plt.ylabel('# of Sleptons')
+#plt.tight_layout()
+#plt.savefig('eta{}_{}vs{}_{}.png'.format(args.mass1, args.lifetime1, args.mass2, args.lifetime2))
+#plt.clf()
+#
 

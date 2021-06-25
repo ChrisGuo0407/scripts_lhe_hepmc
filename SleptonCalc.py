@@ -70,8 +70,8 @@ seen_event_count = 0
 event_count = 0
   #dotest = False
 
-Lxy_ok_list = numpy.zeros(len(Lxy_pass_check))
-pT_ok_list = numpy.zeros(len(pT_pass_check))
+Lxy_ok_list = [0 for cut in Lxy_pass_check]
+pT_ok_list = [0 for cut in pT_pass_check]
 
 event_passes = numpy.zeros([len(Lxy_pass_check), len(pT_pass_check)])
 
@@ -213,21 +213,41 @@ for i in range(len(event_passes)):
         errors[i][j] = (math.sqrt((event_passes[i][j] / seen_event_count) * (1 - (event_passes[i][j] / seen_event_count)) / seen_event_count))
 
 
-cf_dict = {"events": event_count, "seen": seen_event_count}
-for i in range(len(Lxy_cuts)):
-    cf_dict[Lxy_cuts[i]] = Lxy_ok_list[i]
-for i in range(len(pT_cuts)):
-    cf_dict[pT_cuts[i]] = pT_ok_list[i]
-cutflow_list.append(cf_dict)
+#cf_dict = {"events": event_count, "seen": seen_event_count}
+#for i in range(len(Lxy_cuts)):
+#    cf_dict[Lxy_cuts[i]] = Lxy_ok_list[i]
+#for i in range(len(pT_cuts)):
+#    cf_dict[pT_cuts[i]] = pT_ok_list[i]
+#cutflow_list.append(cf_dict)
+class NumpyEncoder(json.JSONEncoder):
+#Special json encoder for numpy types
+    def default(self, obj):
+        if isinstance(obj, numpy.integer):
+            return int(obj)
+        elif isinstance(obj, numpy.floating):
+            return float(obj)
+        elif isinstance(obj, numpy.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
 
+
+LxyEff = [x/float(events) *100 for x in Lxy_ok_list]
+pTEff = [x/float(events) *100 for x in pT_ok_list]
+print("eff ", LxyEff, "pTEff ", pTEff)
+Lxy_cuts = json.dumps(LxyEff, cls=NumpyEncoder)
+pT_cuts = json.dumps(pTEff, cls=NumpyEncoder)
+print(Lxy_cuts)
+print(pT_cuts)
 
 data = {"Lxy{}_{}".format(args.mass, args.lifetime): Lxyarray,
  "pT{}_{}".format(args.mass, args.lifetime): pTarray,
  "phi{}_{}".format(args.mass, args.lifetime): phiarray,
  "eta{}_{}".format(args.mass, args.lifetime): etaarray,
  "cf_list{}_{}".format(args.mass, args.lifetime): cutflow_list,
- "LxyEff{}_{}".format(args.mass, args.lifetime): Lxy_cuts,
- "pTEff{}_{}".format(args.mass, args.lifetime): pT_cuts}
+ "LxyEff{}_{}".format(args.mass, args.lifetime): LxyEff,
+ "pTEff{}_{}".format(args.mass, args.lifetime): pTEff,
+ "LxyCuts{}_{}".format(args.mass, args.lifetime): Lxy_pass_check,
+ "pTCuts{}_{}".format(args.mass, args.lifetime): pT_pass_check}
 
 
 with open('SleptonCalc{}_{}.json'.format(args.mass, args.lifetime), 'w') as fp:
@@ -236,7 +256,6 @@ with open('SleptonCalc{}_{}.json'.format(args.mass, args.lifetime), 'w') as fp:
 
 print("Number of events: ", events)
 print("Percent of \"seen\" events: ", 100 * seen_event_count_total / events, "%")
-print("Percent of \"Lxy\" events: ", 100 * Lxy_ok_list / events, "%")
-print("Percent of \"pT\" events: ", 100 * pT_ok_list / events, "%")
-print(Lxy_ok_list)
-print(pT_ok_list)
+print("Percent of \"Lxy\" events: ", LxyEff, "%")
+print("Percent of \"pT\" events: ", pTEff, "%")
+print(Lxy_pass_check)
