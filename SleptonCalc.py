@@ -28,7 +28,16 @@ Lxyarray = []
 pTarray = []
 phiarray = []
 etaarray = []
+zarray = []
 Staus = [2000015, 1000015]
+acceptstau = []
+Lxy_stau_ok = [0,0,0,0]
+
+    #Lxy arrays for specific acceptance cuts
+Lxy600 = []
+Lxy800 = []
+Lxy1000 = []
+Lxy1200 = []
 
 seen_event_count_total = 0
 events = 0
@@ -37,6 +46,7 @@ n = 0
 Lxy_pass_check = [600, 800, 1000, 1200]
 pT_pass_check = [10, 20, 30, 50]
 eta_pass_check = [1.0, 2.5]
+z_cut = [2600]
 track_low_cut = 1
 
 event_counts = 0 
@@ -60,6 +70,72 @@ def passTrackTrigger(Lxy, Lxy_cuts, pT, pT_cuts):
         passCounts[2] = 1
     return passCounts
 
+def LxyAcceptance(Lxy, Lxy_pass_check, z, z_cuts):
+    pass_Lxys_zs = []
+    for z_cut in z_cuts:
+        pass_Lxys = []
+        for Lxy_cut in Lxy_pass_check:
+            pass_Lxy = Lxy > Lxy_cut or abs(z) > z_cut
+            pass_Lxys.append(pass_Lxy)
+        pass_Lxys_zs.append(pass_Lxys)
+
+    #print (pass_Lxys_zs)
+
+    return pass_Lxys_zs
+
+def pTAcceptance(pT, pT_pass_check):
+    pass_pT = [pT > cut for cut in pT_pass_check]
+    #print (pass_pT)
+
+    return pass_pT
+    
+def etaAcceptance(eta, eta_pass_check):
+    pass_eta = [abs(eta) < cut for cut in eta_pass_check]
+    #print (pass_eta)
+
+    return pass_eta
+
+#Test difference acceptances for different scenarios
+def TrackTriggerAcceptance(Lxy, eta, z):
+    Lxy_pass_check = [600, 800, 1000, 1200]
+    eta_pass_check = [2.5]
+    z_cuts = [2600]
+    pass_eta = []
+
+    pass_Lxy_z_arrays = LxyAcceptance(Lxy, Lxy_pass_check, z, z_cuts)
+    pass_eta_array = etaAcceptance(eta, eta_pass_check)
+    pass_all_array = []
+    for pass_eta in pass_eta_array:
+        # looping over eta cuts
+        pass_all_z = []
+        for pass_Lxy_z_array in pass_Lxy_z_arrays:
+            # looping over z cuts
+            pass_all_Lxy = []
+            for pass_Lxy in pass_Lxy_z_array:
+                # looping over Lxy cuts
+                pass_all = pass_Lxy and pass_eta
+                pass_all_Lxy.append(pass_all)
+            #print("Lxy ",pass_all_Lxy)
+            pass_all_z.append(pass_all_Lxy)
+        pass_all_array.append(pass_all_z)
+   # print("Z cuts ",pass_all_z)
+    #print("Pass Everything ", pass_all_array)
+    return pass_all_array    
+
+
+
+#LxyAcceptance(1000,[600, 800, 1000, 1200], 2400, [1500, 2000, 2700, 2900])
+#pTAcceptance(5, [10, 20, 30, 50])
+#etaAcceptance(2.4, [1.0, 2.5])
+TrackTriggerAcceptance(1000, .7, 2000)
+
+
+#LxyAcceptance(1000,[600, 800, 1000, 1200], 2400, [1500, 2000, 2700, 2900])
+#pTAcceptance(5, [10, 20, 30, 50])
+#etaAcceptance(2.4, [1.0, 2.5])
+TrackTriggerAcceptance(1000, .7, 2000)
+Test = TrackTriggerAcceptance(1000, .7, 2000)
+print("Test Check ",Test[0][0][3])
 
 #-------------------------------------------------------------------------------------------------------------------------
 #read file start
@@ -155,28 +231,49 @@ with hep.open(read_infile) as f:
           # http://hepmc.web.cern.ch/hepmc/classHepMC3_1_1FourVector.html
           #print("Decay location is: x",fourvec.x,", y",fourvec.y,", z",fourvec.z,", t",fourvec.t)
           Lxy = (fourvec.x**2+fourvec.y**2)**0.5
-          #print("Lxy value is ", Lxy)
+          z = fourvec.z
+          
 
-          #checks if track passes the Lxy / pT
           for i in range(len(Lxy_pass_check)):
             for j in range(len(pT_pass_check)):
                 tracker = passTrackTrigger(Lxy, Lxy_pass_check[i], thispT, pT_pass_check[j])
                 if tracker[0] == 1 and j == 0:
-                    event_Lxy_ok_list[i] += 1
+                  event_Lxy_ok_list[i] += 1
                 if tracker[1] == 1 and i == 1:
-                    event_pT_ok_list[j] += 1
+                  event_pT_ok_list[j] += 1
                 if tracker[2] == 1:
-                    event_num_good_tracks[i][j] += 1
+                  event_num_good_tracks[i][j] += 1
 #keep track ids so we can do other things later
-                    track_ids[i][j].append(particle.id)
+                  track_ids[i][j].append(particle.id)
 
+        
 
           # Puts particle information into arrays
           Lxyarray.append(Lxy)
           pTarray.append(thispT)
           phiarray.append(thisphi)
           etaarray.append(thiseta)
+          zarray.append(z)
           #stau_isolation.append()
+
+#Checks to see if Lxy passes through eta and z
+          acceptstau = TrackTriggerAcceptance(Lxy, thiseta, z)
+          if acceptstau[0][0][0] == True:
+            Lxy600.append(Lxy)
+            Lxy_stau_ok[0] += 1
+          if acceptstau[0][0][1] == True:
+            Lxy800.append(Lxy)
+            Lxy_stau_ok[1] += 1
+          if acceptstau[0][0][2] == True:
+            Lxy_stau_ok[2] +=1
+            Lxy1000.append(Lxy)
+          if acceptstau[0][0][3] == True:
+            Lxy_stau_ok[3] +=1
+            Lxy1200.append(Lxy)
+        
+         
+
+
 
         # Otherwise, this particle isn't decaying
         else :
@@ -247,15 +344,24 @@ data = {"Lxy{}_{}".format(args.mass, args.lifetime): Lxyarray,
  "LxyEff{}_{}".format(args.mass, args.lifetime): LxyEff,
  "pTEff{}_{}".format(args.mass, args.lifetime): pTEff,
  "LxyCuts{}_{}".format(args.mass, args.lifetime): Lxy_pass_check,
- "pTCuts{}_{}".format(args.mass, args.lifetime): pT_pass_check}
+ "pTCuts{}_{}".format(args.mass, args.lifetime): pT_pass_check,
+ "LxySOL{}_{}".format(args.mass, args.lifetime): Lxy_stau_ok,
+ "Lxy600{}_{}".format(args.mass, args.lifetime): Lxy600,
+ "Lxy800{}_{}".format(args.mass, args.lifetime): Lxy800,
+ "Lxy1000{}_{}".format(args.mass, args.lifetime): Lxy1000,
+ "Lxy1200{}_{}".format(args.mass, args.lifetime): Lxy1200}
 
 
 with open('SleptonCalc{}_{}.json'.format(args.mass, args.lifetime), 'w') as fp:
   json.dump(data, fp)
 
 
-print("Number of events: ", events)
-print("Percent of \"seen\" events: ", 100 * seen_event_count_total / events, "%")
-print("Percent of \"Lxy\" events: ", LxyEff, "%")
-print("Percent of \"pT\" events: ", pTEff, "%")
-print(Lxy_pass_check)
+#print("Number of events: ", events)
+#print("Percent of \"seen\" events: ", 100 * seen_event_count_total / events, "%")
+#print("Percent of \"Lxy\" events: ", LxyEff, "%")
+#print("Percent of \"pT\" events: ", pTEff, "%")
+#print("600", Lxy600)
+#print("800", Lxy800)
+#print("1000", Lxy1000)
+#print("1200", Lxy1200)
+#print("Stau Ok List ", Lxy_stau_ok)

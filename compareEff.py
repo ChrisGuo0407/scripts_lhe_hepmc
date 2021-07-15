@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 pTEff = []
 pTCuts = []
 df = open("SleptonCalc400_1ns.json")
-nLxyCuts = df("LxyCuts400_1ns")
+data = json.load(df)
+nLxyCuts = data["LxyCuts400_1ns"]
 
 def getEff(dist, i , mass, lifetime):
     jsonfile = open("SleptonCalc{}_{}.json".format(mass, lifetime))
@@ -14,6 +15,14 @@ def getEff(dist, i , mass, lifetime):
     Effs = data["{}Eff{}_{}".format(dist,mass, lifetime)]
         
     return Cuts[i], Effs[i]
+
+def getStauOk(dist, i, mass, lifetime):
+    jsonfile = open("SleptonCalc{}_{}.json".format(mass, lifetime))
+    data = json.load(jsonfile)
+    SOL = data["{}SOL{}_{}".format(dist,mass, lifetime)]
+    Cuts = data["{}Cuts{}_{}".format(dist,mass, lifetime)]
+
+    return SOL[i], Cuts[i]
 
 def compmass ():
     i = 0
@@ -55,7 +64,7 @@ def lt(dist, i, lifetimes, mass, filename):
     Cuti_versus_lt = []
 
     for lifetime in lifetimes:
-        cutVal,Eff = getEff(dist, i, mass, lifetime)
+        cutVal,Eff = getEff(dist, i, mass, lifetime) #Calls the values from getEff function
         Effi_versus_lt.append(Eff)
         Cuti_versus_lt.append(cutVal)
  
@@ -76,7 +85,7 @@ def lt(dist, i, lifetimes, mass, filename):
 
     return lifetimes, Effi_versus_lt, lab
 
-def complt(dist, lifetimes, mass)
+def complt(dist, lifetimes, mass):
     nCuts = nLxyCuts 
 
     fig = plt.figure()
@@ -92,3 +101,45 @@ def complt(dist, lifetimes, mass)
     plt.savefig("LxyLTCuts300GeV_All.png")
     plt.clf()
 
+def SOLmass(dist, i, masses, lifetime, filename):
+    SOLi_vs_mass = []
+    Cuti_vs_mass = []
+    
+    for mass in masses:
+        SOL, cutVal = getStauOk(dist, i, mass, lifetime) #Calls both values from getStauOk function
+        SOLi_vs_mass.append(SOL)
+        Cuti_vs_mass.append(cutVal)
+
+    print(SOLi_vs_mass)
+    print(Cuti_vs_mass)
+    lab = "Stau that passed"  + str(Cuti_vs_mass)+ "mm"
+    fig = plt.figure()
+    plt.style.use('fivethirtyeight')
+    plt.ylim(0,100)
+    plt.errorbar(masses, SOLi_vs_mass, label = lab )
+    plt.legend(loc = "upper right")
+    plt.xlabel("Masses")
+    plt.ylabel("# of Stau")
+    plt.tight_layout()
+    plt.savefig(filename)
+    return masses, SOLi_vs_mass
+
+def compSOL(dist, masses, lifetime):
+    nCuts = nLxyCuts #Should be 600, 800, 1000, 1200
+
+    fig = plt.figure()
+    for i in nCuts:
+        print(i)
+        masses, SOLi_vs_mass, label = SOLmass(dist, i, masses, lifetime, "LxySOL{}Cut.png".format(i))
+        plt.figure(1)
+        plt.errorbar(masses, SOLi_vs_mass, label = label)
+
+    plt.legend(loc = "upper left")
+    plt.xlabel("Masses")
+    plt.ylabel("# of Stau")
+    plt.tight_layout()
+    plt.savefig("LxySOL_All.png")
+    plt.clf()
+
+#complt(Lxy, [
+compSOL("Lxy",[100,300,400,600],"1ns")
