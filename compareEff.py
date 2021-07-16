@@ -111,8 +111,8 @@ def SOLmass(dist, i, masses, lifetime, filename):
         Cuti_vs_mass.append(cutVal)
 
     print(SOLi_vs_mass)
-    print(Cuti_vs_mass)
-    lab = "Stau that passed"  + str(Cuti_vs_mass)+ "mm"
+    print(cutVal)
+    lab = "Staus past"  + str(cutVal)+ "mm"
     fig = plt.figure()
     plt.style.use('fivethirtyeight')
     plt.ylim(0,100)
@@ -122,19 +122,19 @@ def SOLmass(dist, i, masses, lifetime, filename):
     plt.ylabel("# of Stau")
     plt.tight_layout()
     plt.savefig(filename)
-    return masses, SOLi_vs_mass
+    return masses, SOLi_vs_mass, lab
 
 def compSOL(dist, masses, lifetime):
     nCuts = nLxyCuts #Should be 600, 800, 1000, 1200
 
     fig = plt.figure()
-    for i in nCuts:
-        print(i)
-        masses, SOLi_vs_mass, label = SOLmass(dist, i, masses, lifetime, "LxySOL{}Cut.png".format(i))
+    for cut in range(0,len(nCuts)):
+        print(cut)
+        masses, SOLi_vs_mass, label = SOLmass(dist, cut, masses, lifetime, "LxySOL{}Cut.png".format(cut))
         plt.figure(1)
         plt.errorbar(masses, SOLi_vs_mass, label = label)
 
-    plt.legend(loc = "upper left")
+    plt.legend(loc = "upper right")
     plt.xlabel("Masses")
     plt.ylabel("# of Stau")
     plt.tight_layout()
