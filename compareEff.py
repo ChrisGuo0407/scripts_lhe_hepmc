@@ -24,6 +24,14 @@ def getStauOk(dist, i, mass, lifetime):
 
     return SOL[i], Cuts[i]
 
+def getEventOk(dist, i, mass, lifetime):
+    jsonfile = open("SleptonCalc{}_{}.json".format(mass, lifetime))
+    data = json.load(jsonfile)
+    Eol = data["nEvent{}SOL{}_{}".format(dist,mass, lifetime)]
+    Cuts = data["{}Cuts{}_{}".format(dist,mass, lifetime)]
+
+    return Eol[i], Cuts[i]
+
 def compmass ():
     i = 0
     lifetime = "1ns"
@@ -68,8 +76,8 @@ def lt(dist, i, lifetimes, mass, filename):
         Effi_versus_lt.append(Eff)
         Cuti_versus_lt.append(cutVal)
  
-    print(Effi_versus_lt)
-    print(Cuti_versus_lt)
+    #print(Effi_versus_lt)
+    #print(Cuti_versus_lt)
     #cutVal = Cuti_versus_lt[0]#Never change this value!
     lab = dist + " > "  + str(cutVal)+ "mm"
     fig = plt.figure()
@@ -110,8 +118,8 @@ def SOLmass(dist, i, masses, lifetime, filename):
         SOLi_vs_mass.append(SOL)
         Cuti_vs_mass.append(cutVal)
 
-    print(SOLi_vs_mass)
-    print(cutVal)
+    #print(SOLi_vs_mass)
+    #print(cutVal)
     lab = "Staus past"  + str(cutVal)+ "mm"
     fig = plt.figure()
     plt.style.use('fivethirtyeight')
@@ -129,7 +137,6 @@ def compSOL(dist, masses, lifetime):
 
     fig = plt.figure()
     for cut in range(0,len(nCuts)):
-        print(cut)
         masses, SOLi_vs_mass, label = SOLmass(dist, cut, masses, lifetime, "LxySOL{}Cut.png".format(cut))
         plt.figure(1)
         plt.errorbar(masses, SOLi_vs_mass, label = label)
@@ -141,5 +148,46 @@ def compSOL(dist, masses, lifetime):
     plt.savefig("LxySOL_All.png")
     plt.clf()
 
+def Eol(dist, i, masses, lifetime, filename):
+    Eol_vs_mass = []
+    Cuti_vs_mass = []
+    
+    for mass in masses:
+        Eol, cutVal = getEventOk(dist, i, mass, lifetime) #Calls both values from getEventOk function
+        Eol_vs_mass.append(Eol)
+        Cuti_vs_mass.append(cutVal)
+
+    #print(Eol_vs_mass)
+    #print(cutVal)
+    lab = str(cutVal)+ "mm"
+    fig = plt.figure()
+    plt.style.use('fivethirtyeight')
+    plt.ylim(0,100)
+    plt.errorbar(masses, Eol_vs_mass, label = lab )
+    plt.legend(loc = "upper right")
+    plt.xlabel("Masses")
+    plt.ylabel("# Events per Cut")
+    plt.tight_layout()
+    plt.savefig(filename)
+    return masses, Eol_vs_mass, lab
+
+def compEol(dist, masses, lifetime):
+    nCuts = nLxyCuts #Should be 600, 800, 1000, 1200
+
+    fig = plt.figure()
+    for cut in range(0,len(nCuts)):
+        masses, Eol_vs_mass, label = Eol(dist, cut, masses, lifetime, "{}Eol{}Cut.png".format(dist,cut))
+        plt.figure(1)
+        plt.errorbar(masses, Eol_vs_mass, label = label)
+
+    plt.legend(loc = "upper right")
+    plt.xlabel("Masses")
+    plt.ylabel("# Events per Cut")
+    plt.tight_layout()
+    plt.savefig("{}Eol_All.png".format(dist))
+    plt.clf()
+
+
 #complt(Lxy, [
 compSOL("Lxy",[100,300,400,600],"1ns")
+compEol("Lxy",[100,300,400,600],"1ns")

@@ -11,6 +11,7 @@ from func.get_iso import *  #grabs functions from get_iso.py
 parser = argparse.ArgumentParser(description='Runs configuration for Slepton files')
 parser.add_argument('--mass', type=str, default = '400', help = 'Default mass for Slepton ')
 parser.add_argument('--lifetime', type=str, default = '1ns', help = 'Default lifetime for Slepton')
+#parser.add_argument('--events', type=str, default = '100', help = 'Number of events to run through')
 parser.add_argument('dotest', type=bool, default = False, help = 'Set to false so no test is run, change to True to run test')
 
 args = parser.parse_args()
@@ -39,15 +40,23 @@ Lxy800 = []
 Lxy1000 = []
 Lxy1200 = []
 
+    #pT arrays for specific acceptance cuts, can change
+pT10 = []
+pT25 = []
+pT35 = []
+pT50 = []
+
 seen_event_count_total = 0
 events = 0
 n = 0
 
 Lxy_pass_check = [600, 800, 1000, 1200]
-pT_pass_check = [10, 20, 30, 50]
+pT_pass_check = [20,50,100,125]
 eta_pass_check = [1.0, 2.5]
 z_cut = [2600]
+eta_cut = [2.5]
 track_low_cut = 1
+pTStauCounter = [0, 0, 0, 0]
 
 event_counts = 0 
 Stau_counts = 0
@@ -55,17 +64,19 @@ event_pass_lxy_cuts = []
 cutflow_list = []
 Lxy_cuts = []
 pT_cuts = []
+
+stau_passes = []
+
+nEventStauOkListLxy = [0, 0, 0, 0]
+nEventStauOkListpT = [0,0,0,0]
 #-------------------------------------------------------------------------------------------------------------------------
 
-
-def passTrackTrigger(Lxy, Lxy_cuts, pT, pT_cuts):
+def passTrackTrigger(Lxy, Lxy_cuts, pT, pT_cuts, z, z_cuts, eta, eta_cuts):
     passCounts = [0, 0, 0]
-    if Lxy > Lxy_cuts:
+    if (Lxy > Lxy_cuts or abs(z) > z_cuts) and abs(eta) < eta_cuts:
         passCounts [0] = 1
     if pT > pT_cuts:
         passCounts[1] = 1
-#   if abs(eta) < eta_cuts:
-#       passcounts[2] = 1
     if (Lxy>Lxy_cuts and pT>pT_cuts):
         passCounts[2] = 1
     return passCounts
@@ -84,10 +95,14 @@ def LxyAcceptance(Lxy, Lxy_pass_check, z, z_cuts):
     return pass_Lxys_zs
 
 def pTAcceptance(pT, pT_pass_check):
-    pass_pT = [pT > cut for cut in pT_pass_check]
+    pass_pTs = []
+    for pT_cut in pT_pass_check:
+        pass_pT = pT > pT_cut
+        pass_pTs.append(pass_pT)
+
     #print (pass_pT)
 
-    return pass_pT
+    return pass_pTs
     
 def etaAcceptance(eta, eta_pass_check):
     pass_eta = [abs(eta) < cut for cut in eta_pass_check]
@@ -124,18 +139,19 @@ def TrackTriggerAcceptance(Lxy, eta, z):
 
 
 
+
 #LxyAcceptance(1000,[600, 800, 1000, 1200], 2400, [1500, 2000, 2700, 2900])
 #pTAcceptance(5, [10, 20, 30, 50])
 #etaAcceptance(2.4, [1.0, 2.5])
-TrackTriggerAcceptance(1000, .7, 2000)
+#TrackTriggerAcceptance(1000, .7, 2000)
 
 
 #LxyAcceptance(1000,[600, 800, 1000, 1200], 2400, [1500, 2000, 2700, 2900])
 #pTAcceptance(5, [10, 20, 30, 50])
 #etaAcceptance(2.4, [1.0, 2.5])
-TrackTriggerAcceptance(1000, .7, 2000)
-Test = TrackTriggerAcceptance(1000, .7, 2000)
-print("Test Check ",Test[0][0][3])
+#TrackTriggerAcceptance(1000, .7, 2000)
+#Test = TrackTriggerAcceptance(1000, .7, 2000)
+#print("Test Check ",Test[0][0][3])
 
 #-------------------------------------------------------------------------------------------------------------------------
 #read file start
@@ -168,7 +184,7 @@ with hep.open(read_infile) as f:
     if not evt : break
 
     # stop if this is just a test
-    if doTest and evt.event_number > 100 :
+    if doTest and evt.event_number > 100:
       break
      
 
@@ -189,6 +205,17 @@ with hep.open(read_infile) as f:
             track_ids[i].append([])
     event_count += 1
 
+    #Number of events that pass through each Lxy cut
+    nEventStau600 = 0
+    nEventStau800 = 0
+    nEventStau1000 = 0
+    nEventStau1200 = 0
+    
+    nEventStau10 = 0
+    nEventStau25 = 0
+    nEventStau35 = 0
+    nEventStau50 = 0
+
  
 #----------------------------------------------------------------------------------------------------------------------
     # Get particles with evt.particles
@@ -202,6 +229,7 @@ with hep.open(read_infile) as f:
         tracks +=1
         #print("This is a Slepton particle")
         #print(particle.status)
+       
 
         # Get the particle four vector
         particlemom = particle.momentum
@@ -236,7 +264,7 @@ with hep.open(read_infile) as f:
 
           for i in range(len(Lxy_pass_check)):
             for j in range(len(pT_pass_check)):
-                tracker = passTrackTrigger(Lxy, Lxy_pass_check[i], thispT, pT_pass_check[j])
+                tracker = passTrackTrigger(Lxy, Lxy_pass_check[i], thispT, pT_pass_check[j], z, z_cut[0], thiseta, eta_cut[0])
                 if tracker[0] == 1 and j == 0:
                   event_Lxy_ok_list[i] += 1
                 if tracker[1] == 1 and i == 1:
@@ -261,17 +289,40 @@ with hep.open(read_infile) as f:
           if acceptstau[0][0][0] == True:
             Lxy600.append(Lxy)
             Lxy_stau_ok[0] += 1
+            nEventStau600 += 1
           if acceptstau[0][0][1] == True:
             Lxy800.append(Lxy)
             Lxy_stau_ok[1] += 1
+            nEventStau800 += 1
           if acceptstau[0][0][2] == True:
             Lxy_stau_ok[2] +=1
             Lxy1000.append(Lxy)
+            nEventStau1000 += 1
           if acceptstau[0][0][3] == True:
             Lxy_stau_ok[3] +=1
             Lxy1200.append(Lxy)
-        
+            nEventStau1200 += 1
          
+
+          pass_pTs = pTAcceptance (thispT, pT_pass_check)
+          if pass_pTs[0] == True:
+            pTStauCounter[0] +=1
+            nEventStau10 += 1
+            pT10.append(thispT)
+          if pass_pTs[1] == True:
+            pTStauCounter[1] +=1
+            nEventStau25 += 1
+            pT25.append(thispT)
+          if pass_pTs[2] == True:
+            pTStauCounter[2] +=1
+            nEventStau35 += 1
+            pT35.append(thispT)
+          if pass_pTs[3] == True:
+            pTStauCounter[3] +=1
+            nEventStau50 += 1
+            pT50.append(thispT)
+
+            
 
 
 
@@ -297,6 +348,25 @@ with hep.open(read_infile) as f:
             if event_num_good_tracks[i][j] >= track_low_cut:
                 event_passes[i][j] += 1
 
+#If the event passes through each specific cut, adds +1 to the array
+    if nEventStau600 > 0:
+        nEventStauOkListLxy[0] +=1
+    if nEventStau800 > 0:
+        nEventStauOkListLxy[1] +=1
+    if nEventStau1000 > 0:
+        nEventStauOkListLxy[2] +=1
+    if nEventStau1200 > 0:
+        nEventStauOkListLxy[3] +=1
+
+#Adds +1 to the array if it passes through said pT cut
+    if nEventStau10 > 0:
+        nEventStauOkListpT[0] +=1
+    if nEventStau25 > 0:
+        nEventStauOkListpT[1] +=1
+    if nEventStau35 > 0:
+        nEventStauOkListpT[2] +=1
+    if nEventStau50 > 0:
+        nEventStauOkListpT[3] +=1
 
 
 events += event_count    
@@ -310,12 +380,7 @@ for i in range(len(event_passes)):
         errors[i][j] = (math.sqrt((event_passes[i][j] / seen_event_count) * (1 - (event_passes[i][j] / seen_event_count)) / seen_event_count))
 
 
-#cf_dict = {"events": event_count, "seen": seen_event_count}
-#for i in range(len(Lxy_cuts)):
-#    cf_dict[Lxy_cuts[i]] = Lxy_ok_list[i]
-#for i in range(len(pT_cuts)):
-#    cf_dict[pT_cuts[i]] = pT_ok_list[i]
-#cutflow_list.append(cf_dict)
+
 class NumpyEncoder(json.JSONEncoder):
 #Special json encoder for numpy types
     def default(self, obj):
@@ -349,7 +414,8 @@ data = {"Lxy{}_{}".format(args.mass, args.lifetime): Lxyarray,
  "Lxy600{}_{}".format(args.mass, args.lifetime): Lxy600,
  "Lxy800{}_{}".format(args.mass, args.lifetime): Lxy800,
  "Lxy1000{}_{}".format(args.mass, args.lifetime): Lxy1000,
- "Lxy1200{}_{}".format(args.mass, args.lifetime): Lxy1200}
+ "Lxy1200{}_{}".format(args.mass, args.lifetime): Lxy1200,
+ "nEventLxySOL{}_{}".format(args.mass, args.lifetime): nEventStauOkListLxy}
 
 
 with open('SleptonCalc{}_{}.json'.format(args.mass, args.lifetime), 'w') as fp:
@@ -358,10 +424,13 @@ with open('SleptonCalc{}_{}.json'.format(args.mass, args.lifetime), 'w') as fp:
 
 #print("Number of events: ", events)
 #print("Percent of \"seen\" events: ", 100 * seen_event_count_total / events, "%")
-#print("Percent of \"Lxy\" events: ", LxyEff, "%")
+print("Lxy ok list  ", Lxy_ok_list)
 #print("Percent of \"pT\" events: ", pTEff, "%")
 #print("600", Lxy600)
 #print("800", Lxy800)
 #print("1000", Lxy1000)
 #print("1200", Lxy1200)
-#print("Stau Ok List ", Lxy_stau_ok)
+print("Stau Ok List ", Lxy_stau_ok)
+print("# of events that pass through", nEventStauOkListLxy)
+print("pT Cut Check ", pTStauCounter)
+print ("# of events that pass through pT ", nEventStauOkListpT)
