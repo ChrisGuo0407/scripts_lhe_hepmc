@@ -56,7 +56,7 @@ eta_pass_check = [1.0, 2.5]
 z_cut = [2600]
 eta_cut = [2.5]
 track_low_cut = 1
-pTStauCounter = [0, 0, 0, 0]
+pT_stau_ok = [0, 0, 0, 0]
 
 event_counts = 0 
 Stau_counts = 0
@@ -77,7 +77,7 @@ def passTrackTrigger(Lxy, Lxy_cuts, pT, pT_cuts, z, z_cuts, eta, eta_cuts):
         passCounts [0] = 1
     if pT > pT_cuts:
         passCounts[1] = 1
-    if (Lxy>Lxy_cuts and pT>pT_cuts):
+    if (Lxy > Lxy_cuts and pT > pT_cuts):
         passCounts[2] = 1
     return passCounts
 
@@ -152,6 +152,19 @@ def TrackTriggerAcceptance(Lxy, eta, z):
 #TrackTriggerAcceptance(1000, .7, 2000)
 #Test = TrackTriggerAcceptance(1000, .7, 2000)
 #print("Test Check ",Test[0][0][3])
+
+def EfficiencyErrorbar (EventList, seen_event_count):
+    efficiencies = []
+    errors = []
+    for i in range(len(EventList)):
+        efficiencies.append((EventList[i] / seen_event_count))
+        errors.append((math.sqrt((EventList[i] / seen_event_count) * (1 - (EventList[i] / seen_event_count)) / seen_event_count)))
+        #print(EventList[i], seen_event_count, EventList[i]/seen_event_count)
+
+    return efficiencies, errors
+    
+
+
 
 #-------------------------------------------------------------------------------------------------------------------------
 #read file start
@@ -303,22 +316,22 @@ with hep.open(read_infile) as f:
             Lxy1200.append(Lxy)
             nEventStau1200 += 1
          
-
+#Checks to see if pT values pass through each cut
           pass_pTs = pTAcceptance (thispT, pT_pass_check)
           if pass_pTs[0] == True:
-            pTStauCounter[0] +=1
+            pT_stau_ok[0] +=1
             nEventStau10 += 1
             pT10.append(thispT)
           if pass_pTs[1] == True:
-            pTStauCounter[1] +=1
+            pT_stau_ok[1] +=1
             nEventStau25 += 1
             pT25.append(thispT)
           if pass_pTs[2] == True:
-            pTStauCounter[2] +=1
+            pT_stau_ok[2] +=1
             nEventStau35 += 1
             pT35.append(thispT)
           if pass_pTs[3] == True:
-            pTStauCounter[3] +=1
+            pT_stau_ok[3] +=1
             nEventStau50 += 1
             pT50.append(thispT)
 
@@ -371,14 +384,10 @@ with hep.open(read_infile) as f:
 
 events += event_count    
 seen_event_count_total += seen_event_count
+#print("seen event count, ", seen_event_count)
 
-efficiencies = numpy.empty([len(event_passes), len(event_passes[0])])
-errors = numpy.empty([len(event_passes), len(event_passes[0])])
-for i in range(len(event_passes)):
-    for j in range(len(event_passes[i])):
-        efficiencies[i][j] = (event_passes[i][j] / seen_event_count)
-        errors[i][j] = (math.sqrt((event_passes[i][j] / seen_event_count) * (1 - (event_passes[i][j] / seen_event_count)) / seen_event_count))
-
+LxyEfficiencies, LxyErrors = EfficiencyErrorbar(nEventStauOkListLxy,seen_event_count)
+pTEfficiencies, pTErrors = EfficiencyErrorbar(nEventStauOkListpT, seen_event_count)
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -391,6 +400,7 @@ class NumpyEncoder(json.JSONEncoder):
         elif isinstance(obj, numpy.ndarray):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
+
 
 
 LxyEff = [x/float(events) *100 for x in Lxy_ok_list]
@@ -415,7 +425,18 @@ data = {"Lxy{}_{}".format(args.mass, args.lifetime): Lxyarray,
  "Lxy800{}_{}".format(args.mass, args.lifetime): Lxy800,
  "Lxy1000{}_{}".format(args.mass, args.lifetime): Lxy1000,
  "Lxy1200{}_{}".format(args.mass, args.lifetime): Lxy1200,
- "nEventLxySOL{}_{}".format(args.mass, args.lifetime): nEventStauOkListLxy}
+ "nEventLxySOL{}_{}".format(args.mass, args.lifetime): nEventStauOkListLxy,
+ "pTSOL{}_{}".format(args.mass, args.lifetime): pT_stau_ok,
+ "pT10{}_{}".format(args.mass, args.lifetime): pT10,
+ "pT25{}_{}".format(args.mass, args.lifetime): pT25,
+ "pT35{}_{}".format(args.mass, args.lifetime): pT35,
+ "pT50{}_{}".format(args.mass, args.lifetime): pT50,
+ "nEventpTSOL{}_{}".format(args.mass, args.lifetime): nEventStauOkListpT,
+ "pTErrors{}_{}".format(args.mass, args.lifetime): pTErrors,
+ "LxyErrors{}_{}".format(args.mass, args.lifetime): LxyErrors,
+ "pTEfficiencies{}_{}".format(args.mass, args.lifetime): pTEfficiencies,
+"LxyEfficiencies{}_{}".format(args.mass, args.lifetime): LxyEfficiencies
+ }
 
 
 with open('SleptonCalc{}_{}.json'.format(args.mass, args.lifetime), 'w') as fp:
@@ -432,5 +453,6 @@ print("Lxy ok list  ", Lxy_ok_list)
 #print("1200", Lxy1200)
 print("Stau Ok List ", Lxy_stau_ok)
 print("# of events that pass through", nEventStauOkListLxy)
-print("pT Cut Check ", pTStauCounter)
+print("pT Cut Check ", pT_stau_ok)
 print ("# of events that pass through pT ", nEventStauOkListpT)
+print(LxyErrors, LxyEfficiencies)

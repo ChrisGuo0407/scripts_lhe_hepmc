@@ -8,13 +8,16 @@ df = open("SleptonCalc400_1ns.json")
 data = json.load(df)
 nLxyCuts = data["LxyCuts400_1ns"]
 
+
+
 def getEff(dist, i , mass, lifetime):
     jsonfile = open("SleptonCalc{}_{}.json".format(mass, lifetime))
     data = json.load(jsonfile)
+    Errors = data["{}Errors{}_{}".format(dist, mass, lifetime)]
     Cuts = data["{}Cuts{}_{}".format(dist,mass, lifetime)]
-    Effs = data["{}Eff{}_{}".format(dist,mass, lifetime)]
+    Effs = data["{}Efficiencies{}_{}".format(dist,mass, lifetime)]
         
-    return Cuts[i], Effs[i]
+    return Cuts[i], Effs[i], Errors[i]
 
 def getStauOk(dist, i, mass, lifetime):
     jsonfile = open("SleptonCalc{}_{}.json".format(mass, lifetime))
@@ -32,81 +35,82 @@ def getEventOk(dist, i, mass, lifetime):
 
     return Eol[i], Cuts[i]
 
-def compmass ():
-    i = 0
-    lifetime = "1ns"
-    masses = [100,400,600]
-    LxyEffi_versus_mass = []
-    LxyCuti_versus_mass = []
+def mass():
+       
+    Effi_versus_lt = []
+    Cuti_versus_lt = []
+    errorbars = []
 
-    for mass in masses: 
-        jsonfile = open("SleptonCalc{}_{}.json".format(mass, lifetime))
-        data = json.load(jsonfile)
-        LxyCuts = data["LxyCuts{}_{}".format(mass, lifetime)]
-        LxyEffs = data["LxyEff{}_{}".format(mass, lifetime)]
-        print("Eff ", LxyEffs)
-        LxyEffi_versus_mass.append( LxyEffs[i] )
-        print("Eff i ", LxyEffs[i])
-        LxyCuti_versus_mass.append(LxyCuts[i])
-
-   # print(LxyEffi_versus_mass)
-   # print(LxyCuti_versus_mass)
-    
+    for mass in masses:
+        cutVal,Eff,errors = getEff(dist, i, mass, lifetime) #Calls the values from getEff function
+        Effi_versus_lt.append(Eff)
+        Cuti_versus_lt.append(cutVal)
+        errorbars.append(errors)
+ 
+    #print(Effi_versus_lt)
+    #print(Cuti_versus_lt)
+    #cutVal = Cuti_versus_lt[0]#Never change this value!
+    plt.title("Efficiency Over Multiple Lifetimes")
+    lab = dist + " > "  + str(cutVal)+ "mm"
+    fig = plt.figure()
     plt.style.use('fivethirtyeight')
-    plt.ylim(0,100)
-    plt.errorbar(masses, LxyEffi_versus_mass, label = "Lxy > {} mm".format( LxyCuti_versus_mass[0]))
-    plt.legend(loc = "upper right")
-    plt.xlabel("GeV")
-    plt.ylabel("Efficiency %")
+    plt.ylim(0,1.4)
+    plt.errorbar(lifetimes, Effi_versus_lt, yerr = errorbars, label = lab, marker = "o", alpha = 0.5)
+    plt.legend(loc = "upper right", fontsize = 'small', frameon = False)
+    plt.xlabel("Lifetimes")
+    plt.ylabel("Efficiency")
     plt.tight_layout()
-    plt.savefig("LxyCut1200mm.png")
-    plt.clf()
-    
-    #pTEff = data["pTEff400_1ns"]
+    plt.savefig(filename)
+    #plt.clf()
 
+    return lifetimes, Effi_versus_lt, lab, errorbars
 
 
 def lt(dist, i, lifetimes, mass, filename):
     
     Effi_versus_lt = []
     Cuti_versus_lt = []
+    errorbars = []
 
     for lifetime in lifetimes:
-        cutVal,Eff = getEff(dist, i, mass, lifetime) #Calls the values from getEff function
+        cutVal,Eff,errors = getEff(dist, i, mass, lifetime) #Calls the values from getEff function
         Effi_versus_lt.append(Eff)
         Cuti_versus_lt.append(cutVal)
+        errorbars.append(errors)
  
     #print(Effi_versus_lt)
     #print(Cuti_versus_lt)
     #cutVal = Cuti_versus_lt[0]#Never change this value!
+    plt.title("Efficiency Over Multiple Lifetimes")
     lab = dist + " > "  + str(cutVal)+ "mm"
     fig = plt.figure()
     plt.style.use('fivethirtyeight')
-    plt.ylim(0,100)
-    plt.errorbar(lifetimes, Effi_versus_lt, label = lab )
-    plt.legend(loc = "upper right")
+    plt.ylim(0,1.4)
+    plt.errorbar(lifetimes, Effi_versus_lt, yerr = errorbars, label = lab, marker = "o", alpha = 0.5)
+    plt.legend(loc = "upper right", fontsize = 'small', frameon = False)
     plt.xlabel("Lifetimes")
-    plt.ylabel("Efficiency %")
+    plt.ylabel("Efficiency")
     plt.tight_layout()
     plt.savefig(filename)
     #plt.clf()
 
-    return lifetimes, Effi_versus_lt, lab
+    return lifetimes, Effi_versus_lt, lab, errorbars
 
 def complt(dist, lifetimes, mass):
     nCuts = nLxyCuts 
 
     fig = plt.figure()
-    for cut in range (0, nCuts):
-        lifetimes, effs, label = lt(dist, cut, lifetimes, mass, "LxyLTCuts300Gev{}.png".format(cut))
+    for cut in range(0,len(nCuts)):
+        lifetimes, effs, label, errorbars = lt(dist, cut, lifetimes, mass, "{}LTCuts{}Gev{}.png".format(dist,mass,cut))
         plt.figure(1)
-        plt.errorbar(lifetimes, effs, label = label)
-
-    plt.legend(loc = "upper left")
+        plt.errorbar(lifetimes, effs, label = label, yerr = errorbars)
+    plt.title("Efficiency Over Multiple Lifetimes")
+    plt.legend(loc = "upper right", fontsize = 'small', frameon = False)
+    plt.ylim(0,1.4)
     plt.xlabel("Lifetimes")
-    plt.ylabel("Efficiency %")
+    plt.ylabel("Efficiency")
     plt.tight_layout()
-    plt.savefig("LxyLTCuts300GeV_All.png")
+    plt.savefig("{}LTCuts{}GeV_All.png".format(dist,mass))
     plt.clf()
 
 def SOLmass(dist, i, masses, lifetime, filename):
@@ -188,6 +192,7 @@ def compEol(dist, masses, lifetime):
     plt.clf()
 
 
-#complt(Lxy, [
+complt("Lxy", ["0p001ns","0p01ns","0p1ns","1ns","10ns"], "300")
+complt("pT", ["0p001ns","0p01ns","0p1ns","1ns","10ns"], "300")
 compSOL("Lxy",[100,300,400,600],"1ns")
 compEol("Lxy",[100,300,400,600],"1ns")
