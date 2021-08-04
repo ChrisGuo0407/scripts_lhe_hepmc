@@ -197,17 +197,17 @@ with hep.open(read_infile) as f:
     if not evt : break
 
     # stop if this is just a test
-    if doTest and evt.event_number > 100:
+    if doTest and evt.event_number > 2000:
       break
      
 
     tracks = 0
 
 
-    if evt.event_number % 1000 == 0:
+    #if evt.event_number % 1000 == 0:
     #now = datetime.now()
     #current_time = now.strftime("%H:%M:%S")
-        print("On file:", m+1, " Event:", evt.event_number)
+    #    print("On file:", m+1, " Event:", evt.event_number)
     event_Lxy_ok_list = numpy.zeros(len(Lxy_pass_check))
     event_pT_ok_list = numpy.zeros(len(pT_pass_check))
     event_num_good_tracks = numpy.zeros([len(Lxy_pass_check), len(pT_pass_check)])
@@ -445,14 +445,14 @@ with open('SleptonCalc{}_{}.json'.format(args.mass, args.lifetime), 'w') as fp:
 
 #print("Number of events: ", events)
 #print("Percent of \"seen\" events: ", 100 * seen_event_count_total / events, "%")
-print("Lxy ok list  ", Lxy_ok_list)
+#print("Lxy ok list  ", Lxy_ok_list)
 #print("Percent of \"pT\" events: ", pTEff, "%")
 #print("600", Lxy600)
 #print("800", Lxy800)
 #print("1000", Lxy1000)
 #print("1200", Lxy1200)
-print("Stau Ok List ", Lxy_stau_ok)
-print("# of events that pass through", nEventStauOkListLxy)
-print("pT Cut Check ", pT_stau_ok)
-print ("# of events that pass through pT ", nEventStauOkListpT)
-print(LxyErrors, LxyEfficiencies)
+#print("Stau Ok List ", Lxy_stau_ok)
+#print("# of events that pass through", nEventStauOkListLxy)
+#print("pT Cut Check ", pT_stau_ok)
+#print ("# of events that pass through pT ", nEventStauOkListpT)
+#print(LxyErrors, LxyEfficiencies)

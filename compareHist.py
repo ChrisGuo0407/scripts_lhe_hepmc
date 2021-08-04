@@ -44,15 +44,15 @@ def comparelts(dist, lifetimes, mass, bins, yscale, xtitle, ytitle, filename):
 
 
 
-#comparemasses("Lxy", "1ns", [100, 400, 600], numpy.linspace(0,2000,30), "log", "Lxy (mm)", "# of Sleptons", 'LxyMassComp.png')
-#comparemasses("pT", "1ns", [100, 400, 600], numpy.linspace(0,800,30), "linear", "pT (GeV)", "# of Sleptons", 'pTMassComp.png')
-#comparemasses("phi", "1ns", [100, 400, 600], numpy.linspace(-numpy.pi,numpy.pi,30), "linear", "phi", "# of Sleptons", 'phiMassComp.png')
-#comparemasses("eta", "1ns", [100, 400, 600], numpy.linspace(-4,4,30), "linear", "eta", "# of Sleptons", 'etaMassComp.png')
+comparemasses("Lxy", "1ns", [100, 300, 400, 600], numpy.linspace(0,2000,30), "log", "Lxy (mm)", "# of Sleptons", 'LxyMassComp.png')
+comparemasses("pT", "1ns", [100, 300, 400, 600], numpy.linspace(0,800,30), "linear", "pT (GeV)", "# of Sleptons", 'pTMassComp.png')
+comparemasses("phi", "1ns", [100, 300, 400, 600], numpy.linspace(-numpy.pi,numpy.pi,30), "linear", "phi", "# of Sleptons", 'phiMassComp.png')
+comparemasses("eta", "1ns", [100, 300, 400, 600], numpy.linspace(-4,4,30), "linear", "eta", "# of Sleptons", 'etaMassComp.png')
 
-#comparelts("Lxy", ["0p01ns", "0p1ns", "1ns", "10ns"], 300, numpy.linspace(0,2000,30), "log", "Lxy (mm)", "# of Sleptons", 'LxyLTComp.png')
-#comparelts("pT", ["0p01ns", "0p1ns", "1ns", "10ns"], 300, numpy.linspace(0,800,30), "linear", "pT (GeV)", "# of Sleptons", 'pTLTComp.png')
-#comparelts("phi",["0p01ns", "0p1ns", "1ns", "10ns"],300, numpy.linspace(-numpy.pi,numpy.pi,30), "linear", "phi", "# of Sleptons", 'phiLTComp.png')
-#comparelts("eta", ["0p01ns", "0p1ns", "1ns", "10ns"],300, numpy.linspace(-4,4,30), "linear", "eta", "# of Sleptons", 'etaLTComp.png')
+comparelts("Lxy", ["0p01ns", "0p1ns", "1ns", "10ns"], 300, numpy.linspace(0,2000,30), "log", "Lxy (mm)", "# of Sleptons", 'LxyLTComp.png')
+comparelts("pT", ["0p01ns", "0p1ns", "1ns", "10ns"], 300, numpy.linspace(0,800,30), "linear", "pT (GeV)", "# of Sleptons", 'pTLTComp.png')
+comparelts("phi",["0p01ns", "0p1ns", "1ns", "10ns"],300, numpy.linspace(-numpy.pi,numpy.pi,30), "linear", "phi", "# of Sleptons", 'phiLTComp.png')
+comparelts("eta", ["0p01ns", "0p1ns", "1ns", "10ns"],300, numpy.linspace(-4,4,30), "linear", "eta", "# of Sleptons", 'etaLTComp.png')
 
 comparemasses("Lxy600", "1ns", [100, 300, 400, 600], numpy.linspace(0,3000,30), "linear", "Lxy @ 600(mm)", "# of Sleptons", 'Lxy600Acceptance.png')
 comparemasses("Lxy800", "1ns", [100, 300, 400, 600], numpy.linspace(0,3000,30), "linear", "Lxy @ 800(mm)", "# of Sleptons", 'Lxy800Acceptance.png')

@@ -35,36 +35,53 @@ def getEventOk(dist, i, mass, lifetime):
 
     return Eol[i], Cuts[i]
 
-def mass():
+def mass(dist, masses, lifetime):
        
-    Effi_versus_lt = []
-    Cuti_versus_lt = []
+    Effi_versus_mass = []
+    Cuti_versus_mass = []
     errorbars = []
 
     for mass in masses:
         cutVal,Eff,errors = getEff(dist, i, mass, lifetime) #Calls the values from getEff function
-        Effi_versus_lt.append(Eff)
-        Cuti_versus_lt.append(cutVal)
+        Effi_versus_mass.append(Eff)
+        Cuti_versus_mass.append(cutVal)
         errorbars.append(errors)
  
     #print(Effi_versus_lt)
     #print(Cuti_versus_lt)
     #cutVal = Cuti_versus_lt[0]#Never change this value!
-    plt.title("Efficiency Over Multiple Lifetimes")
+    plt.title("Efficiency Over Multiple Masses")
     lab = dist + " > "  + str(cutVal)+ "mm"
     fig = plt.figure()
     plt.style.use('fivethirtyeight')
     plt.ylim(0,1.4)
-    plt.errorbar(lifetimes, Effi_versus_lt, yerr = errorbars, label = lab, marker = "o", alpha = 0.5)
+    plt.errorbar(masses, Effi_versus_mass, yerr = errorbars, label = lab, marker = "o", alpha = 0.5)
     plt.legend(loc = "upper right", fontsize = 'small', frameon = False)
-    plt.xlabel("Lifetimes")
+    plt.xlabel("masses")
     plt.ylabel("Efficiency")
     plt.tight_layout()
     plt.savefig(filename)
     #plt.clf()
 
-    return lifetimes, Effi_versus_lt, lab, errorbars
+    return masses, Effi_versus_mass, lab, errorbars
 
+
+def compmass(dist, masses,lifetime):
+    nCuts = nLxyCuts 
+
+    fig = plt.figure()
+    for cut in range(0,len(nCuts)):
+        masses, effs, label, errorbars = mass(dist, cut, masses, lifetime, "{}MassCuts{}Gev{}.png".format(dist,mass,cut))
+        plt.figure(1)
+        plt.errorbar(masses, effs, label = label, yerr = errorbars)
+    plt.title("Efficiency Over Multiple Masses")
+    plt.legend(loc = "upper right", fontsize = 'small', frameon = False)
+    plt.ylim(0,1.4)
+    plt.xlabel("Masses")
+    plt.ylabel("Efficiency")
+    plt.tight_layout()
+    plt.savefig("{}LTCuts{}GeV_All.png".format(dist,mass))
+    plt.clf()
 
 def lt(dist, i, lifetimes, mass, filename):
     
@@ -193,6 +210,6 @@ def compEol(dist, masses, lifetime):
 
 
 complt("Lxy", ["0p001ns","0p01ns","0p1ns","1ns","10ns"], "300")
-complt("pT", ["0p001ns","0p01ns","0p1ns","1ns","10ns"], "300")
+complt("pT", ["100","300","400","600"], "1ns")
 compSOL("Lxy",[100,300,400,600],"1ns")
 compEol("Lxy",[100,300,400,600],"1ns")
