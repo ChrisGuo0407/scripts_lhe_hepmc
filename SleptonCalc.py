@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#Imported Libraries to use for the script
 import json
 import pyhepmc_ng as hep
 import matplotlib.pyplot as plt
@@ -7,7 +8,7 @@ import argparse
 import math
 from func.get_iso import *  #grabs functions from get_iso.py
 
-
+#These are arguments when calling the script. Do --mass # --lifetime 1ns doTest=True to run the code
 parser = argparse.ArgumentParser(description='Runs configuration for Slepton files')
 parser.add_argument('--mass', type=str, default = '400', help = 'Default mass for Slepton ')
 parser.add_argument('--lifetime', type=str, default = '1ns', help = 'Default lifetime for Slepton')
@@ -15,7 +16,8 @@ parser.add_argument('--lifetime', type=str, default = '1ns', help = 'Default lif
 parser.add_argument('dotest', type=bool, default = False, help = 'Set to false so no test is run, change to True to run test')
 
 args = parser.parse_args()
-    
+
+#Reads the file given arguments from this user folder.
 read_infile = "/eos/user/k/kdipetri/Snowmass_HepMC/run_staus/stau_{}_0_{}/events.hepmc".format(args.mass,args.lifetime)
 
 #Checks to see if the file works
@@ -50,6 +52,7 @@ seen_event_count_total = 0
 events = 0
 n = 0
 
+#Initializes arrays for TrackTriggerAcceptance Function
 Lxy_pass_check = [600, 800, 1000, 1200]
 pT_pass_check = [20,50,100,125]
 eta_pass_check = [1.0, 2.5]
@@ -57,6 +60,7 @@ z_cut = [2600]
 eta_cut = [2.5]
 track_low_cut = 1
 pT_stau_ok = [0, 0, 0, 0]
+
 
 event_counts = 0 
 Stau_counts = 0
@@ -67,10 +71,13 @@ pT_cuts = []
 
 stau_passes = []
 
+#Array for adding up every Stau that passes through each cut of the given value.
 nEventStauOkListLxy = [0, 0, 0, 0]
 nEventStauOkListpT = [0,0,0,0]
 #-------------------------------------------------------------------------------------------------------------------------
 
+#This Function will count how many Staus pass through the given cuts of each value. If it goes through Lxy, z, and eta cuts, then the first value in the array becomes True
+#if the stau passes through the pT cut, the 2nd value in the array will become true, and if both 1&2 become true then the 3rd value in the array becomes true.
 def passTrackTrigger(Lxy, Lxy_cuts, pT, pT_cuts, z, z_cuts, eta, eta_cuts):
     passCounts = [0, 0, 0]
     if (Lxy > Lxy_cuts or abs(z) > z_cuts) and abs(eta) < eta_cuts:
@@ -81,6 +88,9 @@ def passTrackTrigger(Lxy, Lxy_cuts, pT, pT_cuts, z, z_cuts, eta, eta_cuts):
         passCounts[2] = 1
     return passCounts
 
+#These 3 Acceptance functions check if the values of Lxy, z, pT, and eta pass through the given cut conditions. The values given are checked and if they pass through certain cuts 
+#in the array, it will show up as a 1, if it does not, then there will be a 0. For example, if in LxyAcceptance, the Lxy is 1100, but the cuts are [600, 800, 1000, 1200]
+#then when you run the function, it will give an array that shows [1, 1, 1, 0], meaning that the Lxy passed every cut but the last one.
 def LxyAcceptance(Lxy, Lxy_pass_check, z, z_cuts):
     pass_Lxys_zs = []
     for z_cut in z_cuts:
@@ -110,7 +120,9 @@ def etaAcceptance(eta, eta_pass_check):
 
     return pass_eta
 
-#Test difference acceptances for different scenarios
+#Test difference acceptances for different scenarios and calls the LxyAcceptance and etaAcceptance functions from above. In this case, the function makes sure that the Stau's values
+#pass through the given cuts and will return the arrays, telling you which cuts they have passed.
+#There is a running example below, that has been commented out to try and see how TrackTriggerAcceptance works. The values have been manually inputed in.
 def TrackTriggerAcceptance(Lxy, eta, z):
     Lxy_pass_check = [600, 800, 1000, 1200]
     eta_pass_check = [2.5]
@@ -153,6 +165,7 @@ def TrackTriggerAcceptance(Lxy, eta, z):
 #Test = TrackTriggerAcceptance(1000, .7, 2000)
 #print("Test Check ",Test[0][0][3])
 
+#This function will take the EventList and the seen_event_count and calculate the errors to be used for the errorbars when we plot the values.
 def EfficiencyErrorbar (EventList, seen_event_count):
     efficiencies = []
     errors = []
@@ -175,9 +188,11 @@ seen_event_count = 0
 event_count = 0
   #dotest = False
 
+#Initializes the array to 0 for the ok lists, the values will be appended to the array if they pass through certain checks.
 Lxy_ok_list = [0 for cut in Lxy_pass_check]
 pT_ok_list = [0 for cut in pT_pass_check]
 
+#Initializes the array to 0 for the length of both the pass_checks
 event_passes = numpy.zeros([len(Lxy_pass_check), len(pT_pass_check)])
 
 
@@ -197,6 +212,7 @@ with hep.open(read_infile) as f:
     if not evt : break
 
     # stop if this is just a test
+    #Will only run up to that many events before stopping the code completely. Can change the value to a smaller one so you can run the code faster.
     if doTest and evt.event_number > 2000:
       break
      
@@ -204,10 +220,7 @@ with hep.open(read_infile) as f:
     tracks = 0
 
 
-    #if evt.event_number % 1000 == 0:
-    #now = datetime.now()
-    #current_time = now.strftime("%H:%M:%S")
-    #    print("On file:", m+1, " Event:", evt.event_number)
+    #Same as the other ok_lists, initializes the arrays to 0 based on the length of the pass_check.
     event_Lxy_ok_list = numpy.zeros(len(Lxy_pass_check))
     event_pT_ok_list = numpy.zeros(len(pT_pass_check))
     event_num_good_tracks = numpy.zeros([len(Lxy_pass_check), len(pT_pass_check)])
@@ -224,6 +237,7 @@ with hep.open(read_infile) as f:
     nEventStau1000 = 0
     nEventStau1200 = 0
     
+    #Number of events that pass through each pT cut
     nEventStau10 = 0
     nEventStau25 = 0
     nEventStau35 = 0
@@ -238,13 +252,15 @@ with hep.open(read_infile) as f:
     for particle in evt.particles :
     # This is what's in the "particle" class: http://hepmc.web.cern.ch/hepmc/classHepMC3_1_1GenParticle.html
       #if(abs(particle.pid)>=10000) : print(particle.id," ",particle.pid)
+      #Checks the run file to see if the particle has the same pid given in Staus(Near the very top of the script), along with the same particle status. If it does, it will 
+        #get the values for this stau and also add +1 to the tracks array.
       if (abs(particle.pid) in Staus and particle.status==62) :
         tracks +=1
         #print("This is a Slepton particle")
         #print(particle.status)
        
 
-        # Get the particle four vector
+        # Get the particle four vector so gets the momentum and converts it to pT, phi, and eta.
         particlemom = particle.momentum
         thispT = particlemom.pt()/1000.
         thisphi = particlemom.phi()
@@ -271,10 +287,11 @@ with hep.open(read_infile) as f:
           # The FourVector class is here: 
           # http://hepmc.web.cern.ch/hepmc/classHepMC3_1_1FourVector.html
           #print("Decay location is: x",fourvec.x,", y",fourvec.y,", z",fourvec.z,", t",fourvec.t)
+          #Calculates the Lxy and z given the vertex properties
           Lxy = (fourvec.x**2+fourvec.y**2)**0.5
           z = fourvec.z
           
-
+            #Checks the values in the passTrackTrigger function and if the values pass the given tracker conditions, it will append +1 each time to the event_ok_lists
           for i in range(len(Lxy_pass_check)):
             for j in range(len(pT_pass_check)):
                 tracker = passTrackTrigger(Lxy, Lxy_pass_check[i], thispT, pT_pass_check[j], z, z_cut[0], thiseta, eta_cut[0])
@@ -381,15 +398,17 @@ with hep.open(read_infile) as f:
     if nEventStau50 > 0:
         nEventStauOkListpT[3] +=1
 
-
+#Adds each event_count given along with each seen_event_count.
 events += event_count    
 seen_event_count_total += seen_event_count
 #print("seen event count, ", seen_event_count)
 
+#Places the errorbar efficiency values to Lxy and pT separately.
 LxyEfficiencies, LxyErrors = EfficiencyErrorbar(nEventStauOkListLxy,seen_event_count)
 pTEfficiencies, pTErrors = EfficiencyErrorbar(nEventStauOkListpT, seen_event_count)
 
 
+#Should convert numpy types to json files
 class NumpyEncoder(json.JSONEncoder):
 #Special json encoder for numpy types
     def default(self, obj):
@@ -402,15 +421,19 @@ class NumpyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-
+#Calculates the efficiencies of Lxy and pT by taking the number of Staus that passed through each ok_list and dividing it by the number of events that happened.
 LxyEff = [x/float(events) *100 for x in Lxy_ok_list]
 pTEff = [x/float(events) *100 for x in pT_ok_list]
 print("eff ", LxyEff, "pTEff ", pTEff)
+
+#Converts the arrays into json types to be placed into json files later on.
 Lxy_cuts = json.dumps(LxyEff, cls=NumpyEncoder)
 pT_cuts = json.dumps(pTEff, cls=NumpyEncoder)
 print(Lxy_cuts)
 print(pT_cuts)
 
+#This is a dictionary that places all the potential data that we need into it. They are formatted so that when they are saved, it will have the mass and lifetime
+#that you specified. For example, if you ran --mass 300 --lifetime 10ns, then for Lxy, it would be "Lxy300_10ns".
 data = {"Lxy{}_{}".format(args.mass, args.lifetime): Lxyarray,
  "pT{}_{}".format(args.mass, args.lifetime): pTarray,
  "phi{}_{}".format(args.mass, args.lifetime): phiarray,
@@ -438,7 +461,7 @@ data = {"Lxy{}_{}".format(args.mass, args.lifetime): Lxyarray,
 "LxyEfficiencies{}_{}".format(args.mass, args.lifetime): LxyEfficiencies
  }
 
-
+#Creates a new json file with the same arguments from above and dumps the data dictionary into the file and saves it for later use.
 with open('SleptonCalc{}_{}.json'.format(args.mass, args.lifetime), 'w') as fp:
   json.dump(data, fp)
 
